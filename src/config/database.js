@@ -24,7 +24,7 @@ const dbState = [{
 const connection = async () => {
     await mongoose.connect('mongodb://localhost:27017/nodejs')
     const state = mongoose.connection.readyState
-    console.log(dbState.find(f => f.value === state).label, "to database") // connected to db
+    console.log(dbState.find(f => f.value === state).label, "to database")
 }
 
 module.exports = connection 

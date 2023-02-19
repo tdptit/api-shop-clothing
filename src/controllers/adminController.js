@@ -1,9 +1,10 @@
-import dotenv from "dotenv"
-dotenv.config()
-import Joi from 'joi'
+require('dotenv').config()
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import Joi from "joi"
 import userService from '../services/userService'
+import tokenService from '../services/tokenService'
+
 
 const generateAccessToken = (user) => {
     return jwt.sign({
@@ -23,9 +24,9 @@ const generateRefreshToken = (user) => {
     })
 }
 
-class userController {
-    async userRegister(req, res, next) {
-        const { name, email, password, address, phone } = req.body
+class adminController {
+    async adminRegister(req, res) {
+        const { name, email, password, address, phone, secretAdmin } = req.body
         let err = await userService.findUser(email)
         if (err !== null) {
             return res.status(200).json({
@@ -40,7 +41,6 @@ class userController {
                 .min(6).required(),
             email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com'] } }).required(),
         })
-
         const { error } = Schema.validate({ name, email, password }, { abortEarly: false })
         if (error) {
             console.log(error)
@@ -49,22 +49,35 @@ class userController {
                 message: error
             })
         }
+        if (secretAdmin !== process.env.SECRET_KEY_ADMIN) {
+            return res.status(200).json({
+                EC: -1,
+                message: 'secretAdmin không đúng'
+            })
+        }
         const hash = await bcrypt.hash(password, 10)
         req.body.password = hash
+        req.body.userType = 'admin'
         let user = await userService.userRegisterService(req.body)
         user.password = null
         return res.status(200).json({
             EC: 1,
-            message: "Đăng kí tài khoản thành công",
+            message: "Đăng kí thành công",
             data: user
         })
     }
-    async userLogin(req, res) {
+    async adminLogin(req, res) {
         let user = await userService.findUser(req.body.email)
         if (user == null) {
             return res.status(200).json({
                 EC: -1,
                 message: "Email không tồn tại"
+            })
+        }
+        if (user.userType === 'user') {
+            return res.status(200).json({
+                EC: -1,
+                message: "Email không có quyền hạn"
             })
         }
         let err = await bcrypt.compare(req.body.password, user.password)
@@ -146,7 +159,7 @@ class userController {
             accessToken: newAccessToken,
         })
     }
-    async userLogout(req, res) {
+    async adminLogout(req, res) {
         await tokenService.clearTokenService(req.cookies.refreshToken)
         await res.clearCookie("accessToken")
         await res.clearCookie("refreshToken")
@@ -155,14 +168,14 @@ class userController {
             message: "Đăng xuất thành công"
         })
     }
-    async updateInfor(req, res) {
-        let user = await userService.updateInforService(req.body)
+    async getAllUser(req, res) {
+        let user = await userService.getUser(req.query)
         return res.status(200).json({
             EC: 1,
-            message: "Cập nhật thành công",
             data: user
         })
     }
 }
 
-module.exports = new userController()
+
+module.exports = new adminController()
