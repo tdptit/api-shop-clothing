@@ -7,7 +7,7 @@ class userService {
             let result = await User.create(userData)
             return result
         } catch (error) {
-            console.log("check register<<<>>>", error)
+            console.log(error)
             return null
         }
     }
@@ -16,13 +16,26 @@ class userService {
             let result = await User.findOne({ email: email })
             return result
         } catch (error) {
-            console.log("check find <<>>", error)
+            console.log(error)
             return null
         }
     }
-    async userLoginService(userData) {
+    async getUser(queryString) {
+        const page = queryString.page
+        const { filter, limit } = aqp(queryString)
+        delete filter.page
+        filter.userType = 'user'
+        let offset = (page - 1) * limit
+        let result = await User.find(filter).skip(offset).limit(limit).exec()
+        return result
+    }
+    async updateInforService(data) {
         try {
-
+            let result = await User.findById(data.userId)
+            result.address = data.address
+            result.phone = data.phone
+            await result.save()
+            return result
         } catch (error) {
             console.log(error)
             return null

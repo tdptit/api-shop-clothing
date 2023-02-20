@@ -76,7 +76,7 @@ class userController {
         }
         let accessToken = generateAccessToken(user)
         let refreshToken = generateRefreshToken(user)
-        // Save token in cookie
+        // token cookie
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
             secure: false,
@@ -127,7 +127,7 @@ class userController {
             newAccessToken = generateAccessToken(user)
             newRefreshToken = generateRefreshToken(user)
             await tokenService.saveRefeshToken(newRefreshToken)
-            // Save token in cookie
+            // token cookie
             res.cookie("accessToken", newAccessToken, {
                 httpOnly: true,
                 secure: false,
