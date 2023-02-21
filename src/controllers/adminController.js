@@ -5,7 +5,6 @@ import Joi from "joi"
 import userService from '../services/userService'
 import tokenService from '../services/tokenService'
 
-
 const generateAccessToken = (user) => {
     return jwt.sign({
         _id: user._id,

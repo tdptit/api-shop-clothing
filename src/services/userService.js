@@ -1,6 +1,5 @@
 import User from '../models/users'
 
-
 class userService {
     async userRegisterService(userData) {
         try {
@@ -21,12 +20,9 @@ class userService {
         }
     }
     async getUser(queryString) {
-        const page = queryString.page
-        const { filter, limit } = aqp(queryString)
-        delete filter.page
-        filter.userType = 'user'
+        const { page, limit } = queryString
         let offset = (page - 1) * limit
-        let result = await User.find(filter).skip(offset).limit(limit).exec()
+        let result = await User.find({ userType: "user" }).skip(offset).limit(limit)
         return result
     }
     async updateInforService(data) {
